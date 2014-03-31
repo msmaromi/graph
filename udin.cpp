@@ -18,7 +18,7 @@ typedef struct{
 
 
 //HEADER
-void boundaryFillInteractive(Point,int, int);
+void boundaryFillInteractive(Point,int,int,int);
 //------------------------------
 
 void lineDDA(Point P1, Point P2, int COLOR){
@@ -209,7 +209,6 @@ void boundaryFill4(Point P1,int fill, int boundary){
 */
 
 void boundaryFill4Queue(Point P, int fill, int boundary, int plus){
-
 	int ListPointX[10000];
 	int ListPointY[10000];
 	int current,counter;
@@ -230,6 +229,7 @@ void boundaryFill4Queue(Point P, int fill, int boundary, int plus){
 	
 	if(ListPointX[counter] == -2){		
 		current = getpixel(P.absis, P.ordinat);
+		printf("%d %d %d|", current, boundary, fill);
 		if(current != boundary && current != fill){
 			ListPointX[counter] = PP.absis;
 			ListPointY[counter] = PP.ordinat;	
@@ -316,9 +316,8 @@ void boundaryFill4Queue(Point P, int fill, int boundary, int plus){
 				}else if((getpixel(temp.absis, temp.ordinat) == boundary) && plus){
 					putpixel(temp.absis,temp.ordinat, fill);					
 				}
-				counter ++;
+				counter++;
 			}
-			printf(" FINISH");
 		}
 	}
 	
@@ -389,7 +388,7 @@ void initCanvas(){
 	lineDDA(h1,h2,WHITE);
 	lineDDA(v1,v2,WHITE);
 	circleBRES(pusKor,3,RED);
-	boundaryFill4(pusKor, RED,RED);
+	boundaryFill4Queue(pusKor, RED,RED,0);
 }
 
 void lineInteractive(){
@@ -442,7 +441,7 @@ void circleInteractive(){
 	pusat=getPixLoc(pusat);
 	circleBRES(pusat,r,GREEN);
 	getch();
-	boundaryFillInteractive(pusat, YELLOW, GREEN);
+	boundaryFillInteractive(pusat, YELLOW, GREEN, 0);
 }
 
 void elipsInteractive(){
@@ -459,7 +458,7 @@ void elipsInteractive(){
 	initCanvas();
 	ellipseMidpoint(pusat.absis, pusat.ordinat,rh,rv,GREEN);
 	getch();
-	boundaryFillInteractive(pusat, YELLOW, GREEN);
+	boundaryFillInteractive(pusat, YELLOW, GREEN, 0);
 }
 
 void bezierCurve(int x[4], int y[4])
@@ -501,12 +500,12 @@ void curveInteractive(){
     bezierCurve(x, y);
 }
 
-void boundaryFillInteractive(Point P, int Fill, int Boundary){
+void boundaryFillInteractive(Point P, int Fill, int Boundary,int plus){
 	int ans;
 	printf("Apakah akan Anda Arsir?[Y = 1/N = 0] : "); scanf("%d", &ans);
 	if(ans){
-		printf("MASUK %d %d", P.absis, P.ordinat);
-		boundaryFill4Queue(P,Fill, Boundary, 1);
+		//printf("MASUK %d %d", P.absis, P.ordinat);
+		boundaryFill4Queue(P,Fill, Boundary, plus);
 	}
 }
 
@@ -538,7 +537,9 @@ void trapesiumInteractive(){
 	P.absis = 100;
 	P.ordinat = 40;
 	P = getPixLoc(P);
-	boundaryFillInteractive(P, YELLOW, GREEN);
+	boundaryFillInteractive(P, GREEN, GREEN, 0);
+	getch();
+	boundaryFillInteractive(P, BLACK, BLACK, 1);
 	getch();
 }
 
