@@ -18,7 +18,7 @@ typedef struct{
 
 
 //HEADER
-void boundaryFillInteractive(Point);
+void boundaryFillInteractive(Point,int, int);
 //------------------------------
 
 void lineDDA(Point P1, Point P2, int COLOR){
@@ -207,7 +207,7 @@ void boundaryFill4(Point P1,int fill, int boundary){
 	}
 }
 
-void boundaryFill4Queue(Point P, int fill, int boundary){
+void boundaryFill4Queue(Point P, int fill, int boundary, int plus){
 	int ListPointX[10000];
 	int ListPointY[10000];
 	int current,counter;
@@ -258,17 +258,27 @@ void boundaryFill4Queue(Point P, int fill, int boundary){
 							ListPointX[j+1] = PP.absis;
 							ListPointY[j+1] = PP.ordinat;
 							j++;
+						}else if((getpixel(W.absis, W.ordinat+1) == boundary) && plus){
+							putpixel(W.absis, W.ordinat+1,fill);
 						}
+						
 						if(getpixel(W.absis, W.ordinat-1) != boundary && getpixel(W.absis , W.ordinat-1) != fill){
 							PP.absis = W.absis;
 							PP.ordinat = W.ordinat-1;
 							ListPointX[j+1] =PP.absis;
 							ListPointY[j+1]= PP.ordinat;
 							j++;
+						}else if((getpixel(W.absis, W.ordinat-1) == boundary) && plus){
+							putpixel(W.absis, W.ordinat-1,fill);
 						}
+						
 						W.absis ++; //geser kanan
 						currentW = getpixel(W.absis, W.ordinat);				
 						//getch();
+					}
+					
+					if((currentW == boundary) && plus){
+						putpixel(W.absis,W.ordinat,fill);
 					}					
 
 					while(currentE != boundary && currentE != fill){
@@ -279,17 +289,30 @@ void boundaryFill4Queue(Point P, int fill, int boundary){
 							ListPointX[j+1] = PP.absis;
 							ListPointY[j+1] = PP.ordinat;	
 							j++;
+						}else if((getpixel(E.absis, E.ordinat+1) == boundary) && plus){
+							putpixel(E.absis, E.ordinat+1,fill);
 						}
+						
 						if(getpixel(E.absis , E.ordinat - 1) != boundary && getpixel(E.absis , E.ordinat -1) != fill){
 							PP.absis = E.absis;
 							PP.ordinat = E.ordinat-1;
 							ListPointX[j+1] = PP.absis;
 							ListPointY[j+1] = PP.ordinat;
 							j++;
+						}else if((getpixel(E.absis, E.ordinat-1) == boundary) && plus){
+							putpixel(E.absis, E.ordinat-1,fill);
 						}
+						
 						E.absis --; //geser kiri
 						currentE = getpixel(E.absis, E.ordinat);
 					}
+					
+					if((currentE == boundary) && plus){
+						putpixel(E.absis,E.ordinat,fill);
+					}					
+					
+				}else if((getpixel(temp.absis, temp.ordinat) == boundary) && plus){
+					putpixel(temp.absis,temp.ordinat, fill);					
 				}
 				counter ++;
 			}
@@ -417,7 +440,7 @@ void circleInteractive(){
 	pusat=getPixLoc(pusat);
 	circleBRES(pusat,r,GREEN);
 	getch();
-	boundaryFillInteractive(pusat);	
+	boundaryFillInteractive(pusat, YELLOW, GREEN);
 }
 
 void elipsInteractive(){
@@ -434,7 +457,7 @@ void elipsInteractive(){
 	initCanvas();
 	ellipseMidpoint(pusat.absis, pusat.ordinat,rh,rv,GREEN);
 	getch();
-	boundaryFillInteractive(pusat);
+	boundaryFillInteractive(pusat, YELLOW, GREEN);
 }
 
 void bezierCurve(int x[4], int y[4])
@@ -476,13 +499,45 @@ void curveInteractive(){
     bezierCurve(x, y);
 }
 
-void boundaryFillInteractive(Point P){
+void boundaryFillInteractive(Point P, int Fill, int Boundary){
 	int ans;
 	printf("Apakah akan Anda Arsir?[Y = 1/N = 0] : "); scanf("%d", &ans);
 	if(ans){
 		printf("MASUK %d %d", P.absis, P.ordinat);
-		boundaryFill4Queue(P,YELLOW, GREEN);
+		boundaryFill4Queue(P,Fill, Boundary, 1);
 	}
+}
+
+void trapesiumInteractive(){
+	Point P1,P2,P3,P4;
+	P1.absis = 20;
+	P1.ordinat = 20;
+	P2.absis = 50;
+	P2.ordinat =50;
+	P3.absis = 100;
+	P3.ordinat = 50;
+	P4.absis = 150;
+	P4.ordinat = 20;
+	
+	P1 = getPixLoc(P1);
+	P2 = getPixLoc(P2);
+	P3 = getPixLoc(P3);
+	P4 = getPixLoc(P4);		
+	
+	initCanvas();
+						
+	lineDDA(P1, P2, GREEN);
+	lineDDA(P2, P3, GREEN);
+	lineDDA(P3, P4, GREEN);
+	lineDDA(P4, P1, GREEN);
+
+	getch();
+	Point P;
+	P.absis = 100;
+	P.ordinat = 40;
+	P = getPixLoc(P);
+	boundaryFillInteractive(P, YELLOW, GREEN);
+	getch();
 }
 
 int main(){
@@ -498,6 +553,7 @@ int main(){
 	printf("2. Lingkaran\n");
 	printf("3. Elips\n");
 	printf("4. Curve\n");
+	printf("5. Gambar Trapesium\n");
 	printf("10. Exit\n");
 	printf("Pilihan Anda : ");
 	scanf("%d", &menu);
@@ -516,6 +572,9 @@ int main(){
 			break;
 		case 4:
 			curveInteractive();
+			break;
+		case 5:
+			trapesiumInteractive();
 			break;
 		case 10:
 			printf("THANKS :D");break;
