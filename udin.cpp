@@ -16,6 +16,11 @@ typedef struct{
 }Point;
 //---------------
 
+
+//HEADER
+void boundaryFillInteractive(Point);
+//------------------------------
+
 void lineDDA(Point P1, Point P2, int COLOR){
 	int xa,xb,ya,yb;
 	//--------------
@@ -202,14 +207,107 @@ void boundaryFill4(Point P1,int fill, int boundary){
 	}
 }
 
+void boundaryFill4Queue(Point P, int fill, int boundary){
+	int ListPointX[10000];
+	int ListPointY[10000];
+	int current,counter;
+	int currentW,currentE;
+	Point W;
+	Point E;
+	Point PP;
+	Point temp;
+	counter = 0;
+	
+	for(int i=0;i<1000;i++){
+		ListPointX[i] = -2;
+		ListPointY[i] = -3;
+	}
+	
+	PP.absis = P.absis;
+	PP.ordinat = P.ordinat;
+	
+	if(ListPointX[counter] == -2){		
+		current = getpixel(P.absis, P.ordinat);
+		if(current != boundary && current != fill){
+			ListPointX[counter] = PP.absis;
+			ListPointY[counter] = PP.ordinat;	
+			while(ListPointX[counter]  > 0){
+				temp.absis = ListPointX[counter];
+				temp.ordinat = ListPointY[counter];
+				ListPointX[counter] = -2;
+				ListPointY[counter] = -3;
+				//printf(" %d&%d||%d %d ",ListPointX[counter],ListPointY[counter],temp.absis, temp.ordinat);
+				current = getpixel(temp.absis, temp.ordinat);
+				if(((current != boundary) && (current != fill) && (temp.absis!=-1)) || counter ==0){
+					//geser kanan dan kiri
+					W.absis = temp.absis+1;
+					//printf(" %d", W.absis);
+					E.absis = temp.absis;
+					W.ordinat = temp.ordinat;
+					E.ordinat = temp.ordinat;
+					currentW = getpixel(W.absis, W.ordinat);
+					currentE = getpixel(E.absis, E.ordinat);					
+					
+					int j=counter;
+				
+					while(currentW != boundary && currentW != fill){
+						putpixel(W.absis,W.ordinat,fill);
+						if(getpixel(W.absis, W.ordinat+1) != boundary && getpixel(W.absis, W.ordinat+1) != fill){
+							PP.absis = W.absis;
+							PP.ordinat = W.ordinat+1;
+							ListPointX[j+1] = PP.absis;
+							ListPointY[j+1] = PP.ordinat;
+							j++;
+						}
+						if(getpixel(W.absis, W.ordinat-1) != boundary && getpixel(W.absis , W.ordinat-1) != fill){
+							PP.absis = W.absis;
+							PP.ordinat = W.ordinat-1;
+							ListPointX[j+1] =PP.absis;
+							ListPointY[j+1]= PP.ordinat;
+							j++;
+						}
+						W.absis ++; //geser kanan
+						currentW = getpixel(W.absis, W.ordinat);				
+						//getch();
+					}					
+
+					while(currentE != boundary && currentE != fill){
+						putpixel(E.absis,E.ordinat,fill);
+						if(getpixel(E.absis, E.ordinat + 1) != boundary && getpixel(E.absis, E.ordinat + 1) != fill){
+							PP.absis = E.absis;
+							PP.ordinat = E.ordinat + 1;
+							ListPointX[j+1] = PP.absis;
+							ListPointY[j+1] = PP.ordinat;	
+							j++;
+						}
+						if(getpixel(E.absis , E.ordinat - 1) != boundary && getpixel(E.absis , E.ordinat -1) != fill){
+							PP.absis = E.absis;
+							PP.ordinat = E.ordinat-1;
+							ListPointX[j+1] = PP.absis;
+							ListPointY[j+1] = PP.ordinat;
+							j++;
+						}
+						E.absis --; //geser kiri
+						currentE = getpixel(E.absis, E.ordinat);
+					}
+				}
+				counter ++;
+			}
+			printf(" FINISH");
+		}
+	}
+	
+}
+
 void floodFill4(int x, int y, int fill, int oldColor){
-	if(getpixel(x,y) == oldColor){
+	if(getpixel(x,y) != fill){
 		putpixel(x,y, fill);
 		floodFill4(x+1, y, fill, oldColor);
 		floodFill4(x-1, y, fill, oldColor);
 		floodFill4(x, y+1, fill, oldColor);
 		floodFill4(x, y-1, fill, oldColor);
 	}
+	getch();
 }
 
 void Rec(Point P1, Point P2, Point P3, Point P4, int COLOR){
@@ -226,8 +324,9 @@ Point getPixLoc(Point P1){
 	return Ptemp;
 }
 
+
 void initCanvas(){
-	clrscr();
+	initgraph(&graphdriver, &graphmode, "..\\bgi");
 	Point h1,h2,v1,v2,pusKor, SS1,SS2,SS3,SS4;
 	h1.absis=20;
 	h1.ordinat=240;
@@ -254,19 +353,18 @@ void initCanvas(){
 	int i,j,xS,yS,xF,yF;
 	xS = 0; xF=641;
 	yS = 0; yF=459;
-
+	/*
 	for (j=yS;j<=yF;j++){
 		for(i=xS;i<=xF;i++){
 			putpixel(i,j,BLACK);
 		}
-	}
+	} */
 	Rec(SS1,SS2,SS3,SS4,BLUE);
 
 	lineDDA(h1,h2,WHITE);
 	lineDDA(v1,v2,WHITE);
 	circleBRES(pusKor,3,RED);
 	boundaryFill4(pusKor, RED,RED);
-
 }
 
 void lineInteractive(){
@@ -318,6 +416,8 @@ void circleInteractive(){
 	initCanvas();
 	pusat=getPixLoc(pusat);
 	circleBRES(pusat,r,GREEN);
+	getch();
+	boundaryFillInteractive(pusat);	
 }
 
 void elipsInteractive(){
@@ -329,7 +429,12 @@ void elipsInteractive(){
 	printf("Jari-jari vertikal =");scanf("%d",&rv);
 
 	pusat=getPixLoc(pusat);
+	getch();
 
+	initCanvas();
+	ellipseMidpoint(pusat.absis, pusat.ordinat,rh,rv,GREEN);
+	getch();
+	boundaryFillInteractive(pusat);
 }
 
 void bezierCurve(int x[4], int y[4])
@@ -337,8 +442,6 @@ void bezierCurve(int x[4], int y[4])
     int gd = DETECT, gm;
     int i;
     double t;
-
-    initgraph (&gd, &gm, "..\\bgi");
 
     for (t = 0.0; t < 1.0; t += 0.0005)
     {
@@ -348,33 +451,46 @@ void bezierCurve(int x[4], int y[4])
 	double yt = pow (1-t, 3) * y[0] + 3 * t * pow (1-t, 2) * y[1] +
 		    3 * pow (t, 2) * (1-t) * y[2] + pow (t, 3) * y[3];
 
-	putpixel (xt, yt, WHITE);
+	putpixel (xt, yt, GREEN);
 	delay(1);
     }
 
     for (i=0; i<4; i++)
 	putpixel (x[i], y[i], YELLOW);
-
-    getch();
-    closegraph();
-    return;
 }
 
 void curveInteractive(){
     int x[4], y[4];
+    Point P[4];
     int i;
 
-    printf ("Enter the x- and y-coordinates of the four control points.\n");
-    for (i=0; i<4; i++)
-	scanf ("%d%d", &x[i], &y[i]);
-
+    printf ("Masukkan 4 Buat titik kontrol\n");
+    for (i=0; i<4; i++){
+	printf("Abssis-i : ");scanf("%d", &P[i].absis);
+	printf("Ordinat-i : ");scanf("%d", &P[i].ordinat);
+	P[i] = getPixLoc(P[i]);
+	x[i] = P[i].absis;
+	y[i] = P[i].ordinat;
+    }
+    initCanvas();
     bezierCurve(x, y);
+}
+
+void boundaryFillInteractive(Point P){
+	int ans;
+	printf("Apakah akan Anda Arsir?[Y = 1/N = 0] : "); scanf("%d", &ans);
+	if(ans){
+		printf("MASUK %d %d", P.absis, P.ordinat);
+		boundaryFill4Queue(P,YELLOW, GREEN);
+	}
 }
 
 int main(){
 	int menu;
 	menu =0;
 	initgraph(&graphdriver, &graphmode, "..\\bgi");
+
+
 
 	printf("---> GRAFIKA ~ GRAFIKA ~ GRAFIKA <---\n");
 	printf("Berikut menu yang tersedia :\n");
@@ -407,24 +523,7 @@ int main(){
 			printf("Masukan salah, program akan keluar\n");
 			break;
 	}
-
-	/*
-	lineDDA(10,50,200,200);
-	lineDDA(220,200, 310,50);
-	lineDDA(10,210,200,210);
-	lineDDA(10,220,10,300);
-
-	lineBRES(10,350, 200,500);
-	lineBRES(220,500, 310,350);
-
-	lineBRES(10,510, 200,510);
-	lineBRES(10,520, 10,600);
-
-	circleBRES(200,200,100);
-
-	ellipseMidpoint(100,100, 80, 40);
-	*/
-
 	getch();
+	closegraph();
 	return 0;
 }
