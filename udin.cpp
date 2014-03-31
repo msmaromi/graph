@@ -178,7 +178,7 @@ void ellipseMidpoint(int xc, int yc, int rx, int ry, int color){
 		drawEllipse(xc, yc, x, y, color);
 	}
 }
-
+/*
 void boundaryFill4(Point P1,int fill, int boundary){
 	int current;
 
@@ -206,7 +206,7 @@ void boundaryFill4(Point P1,int fill, int boundary){
 		boundaryFill4(Pd,fill, boundary);
 	}
 }
-
+*/
 void boundaryFill4Queue(Point P, int fill, int boundary){
 	int ListPointX[10000];
 	int ListPointY[10000];
