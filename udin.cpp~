@@ -10,7 +10,6 @@
 int graphdriver=DETECT, graphmode,x;
 
 //-- TIPE DATA --
-
 typedef struct{
 	int absis;
 	int ordinat;
@@ -19,7 +18,7 @@ typedef struct{
 
 
 //HEADER
-void boundaryFillInteractive(Point,int,int,int);
+void boundaryFillInteractive(Point,int, int);
 //------------------------------
 
 void lineDDA(Point P1, Point P2, int COLOR){
@@ -51,36 +50,44 @@ void lineDDA(Point P1, Point P2, int COLOR){
 	}
 }
 
-void lineBRES(int x0,int y0,int x1,int y1,int color){
-  int dx = abs (x1-x0), sx = x0<x1 ? 1 : -1;
-  int dy = abs (y1-y0), sy = y0<y1 ? 1 : -1; 
-  int err = (dx>dy ? dx : -dy)/2, e2;
- 
-  for(;;){
-    putpixel(x0,y0,color);
-    if (x0==x1 && y0==y1) break;
-    e2 = err;
-    if (e2 >-dx) { err -= dy; x0 += sx; }
-    if (e2 < dy) { err += dx; y0 += sy; }
-  }
-}	
+void lineBRES(int x1,int y1,int x2,int y2, int COLOR){
+       /*
+	int x1,x2,y1,y2;
 
-void lineFPA(int xa, int ya, int xb, int yb, int color){
-	int dx = xb-xa;
-	int dy = yb-ya;
-	int x;
-	int y;
+	x1=P1.absis;
+	x2=P2.absis;
+	y1=P1.ordinat;
+	y2=P2.ordinat;
+	 */
+	int dx = abs(x1-x2);
+	int dy = abs(y1-y2);
+	//PARAMETER PEMILIHAN YANG DIPAKAI -> P, 2dy, 2dy - 2dx
+	int P = (2*dy) -dx;
+	int Ddy = 2 * dy;
+	int Ddydx = 2 * (dy-dx);
 
-	if(dx>0){
-		for(x=xa; x<=xb;x++){
-		y=ya+(dy*(x-xa)/dx);
-		putpixel(x,y,color);
+	// variabel buat ngitung2
+	int x,y,xEnd;
+	if(x1 > x2){
+		x = x2;
+		y = y2;
+		xEnd = x1;
+	}else {
+		x = x1;
+		y = y1;
+		xEnd = x2;
+	}
+	// titik awal ------
+	putpixel(x,y,COLOR);
+
+	while (x < xEnd){
+		x++;
+		if (P < 0) P += Ddy;
+		else {
+			y++;
+			P += Ddydx;
 		}
-	}else{
-		for(x=xb; x<=xa;x++){
-			y=yb+(dy*(x-xb)/dx);
-			putpixel(x,y,color);
-		}
+		putpixel(x,y,COLOR);
 	}
 }
 
@@ -202,37 +209,30 @@ void boundaryFill4(Point P1,int fill, int boundary){
 */
 
 void boundaryFill4Queue(Point P, int fill, int boundary, int plus){
+
 	int ListPointX[10000];
 	int ListPointY[10000];
-	int ListPointXBoundary[1000];
-	int ListPointYBoundary[1000];
-	int current,counter,counterBoundary;
+	int current,counter;
 	int currentW,currentE;
 	Point W;
 	Point E;
 	Point PP;
 	Point temp;
 	counter = 0;
-	counterBoundary =0;
 	
-	for(int i=0;i<10000;i++){
+	for(int i=0;i<1000;i++){
 		ListPointX[i] = -2;
 		ListPointY[i] = -3;
-		if(i<1000){
-			ListPointXBoundary[i] = -6;
-			ListPointYBoundary[i] = -7;		
-		}		
 	}
-
+	
 	PP.absis = P.absis;
 	PP.ordinat = P.ordinat;
-
-	if(ListPointX[counter] == -2){
+	
+	if(ListPointX[counter] == -2){		
 		current = getpixel(P.absis, P.ordinat);
-		printf("%d %d %d|", current, boundary, fill);
 		if(current != boundary && current != fill){
 			ListPointX[counter] = PP.absis;
-			ListPointY[counter] = PP.ordinat;
+			ListPointY[counter] = PP.ordinat;	
 			while(ListPointX[counter]  > 0){
 				temp.absis = ListPointX[counter];
 				temp.ordinat = ListPointY[counter];
@@ -261,9 +261,7 @@ void boundaryFill4Queue(Point P, int fill, int boundary, int plus){
 							ListPointY[j+1] = PP.ordinat;
 							j++;
 						}else if((getpixel(W.absis, W.ordinat+1) == boundary) && plus){
-							ListPointXBoundary[counterBoundary] = W.absis;
-							ListPointYBoundary[counterBoundary] = W.ordinat + 1;							
-							counterBoundary++;
+							putpixel(W.absis, W.ordinat+1,fill);
 						}
 						
 						if(getpixel(W.absis, W.ordinat-1) != boundary && getpixel(W.absis , W.ordinat-1) != fill){
@@ -273,20 +271,16 @@ void boundaryFill4Queue(Point P, int fill, int boundary, int plus){
 							ListPointY[j+1]= PP.ordinat;
 							j++;
 						}else if((getpixel(W.absis, W.ordinat-1) == boundary) && plus){
-							ListPointXBoundary[counterBoundary] = W.absis;
-							ListPointYBoundary[counterBoundary] = W.ordinat - 1;							
-							counterBoundary++;
+							putpixel(W.absis, W.ordinat-1,fill);
 						}
-
+						
 						W.absis ++; //geser kanan
 						currentW = getpixel(W.absis, W.ordinat);				
 						//getch();
 					}
 					
 					if((currentW == boundary) && plus){
-						ListPointXBoundary[counterBoundary] = W.absis;
-						ListPointYBoundary[counterBoundary] = W.ordinat;							
-						counterBoundary++;
+						putpixel(W.absis,W.ordinat,fill);
 					}					
 
 					while(currentE != boundary && currentE != fill){
@@ -298,9 +292,7 @@ void boundaryFill4Queue(Point P, int fill, int boundary, int plus){
 							ListPointY[j+1] = PP.ordinat;	
 							j++;
 						}else if((getpixel(E.absis, E.ordinat+1) == boundary) && plus){
-							ListPointXBoundary[counterBoundary] = E.absis;
-							ListPointYBoundary[counterBoundary] = E.ordinat + 1;							
-							counterBoundary++;
+							putpixel(E.absis, E.ordinat+1,fill);
 						}
 						
 						if(getpixel(E.absis , E.ordinat - 1) != boundary && getpixel(E.absis , E.ordinat -1) != fill){
@@ -310,9 +302,7 @@ void boundaryFill4Queue(Point P, int fill, int boundary, int plus){
 							ListPointY[j+1] = PP.ordinat;
 							j++;
 						}else if((getpixel(E.absis, E.ordinat-1) == boundary) && plus){
-							ListPointXBoundary[counterBoundary] = E.absis;
-							ListPointYBoundary[counterBoundary] = E.ordinat - 1;							
-							counterBoundary++;														
+							putpixel(E.absis, E.ordinat-1,fill);
 						}
 						
 						E.absis --; //geser kiri
@@ -320,32 +310,18 @@ void boundaryFill4Queue(Point P, int fill, int boundary, int plus){
 					}
 					
 					if((currentE == boundary) && plus){
-						ListPointXBoundary[counterBoundary] = E.absis;
-						ListPointYBoundary[counterBoundary] = E.ordinat;							
-						counterBoundary++;
-					}
+						putpixel(E.absis,E.ordinat,fill);
+					}					
 					
 				}else if((getpixel(temp.absis, temp.ordinat) == boundary) && plus){
-						ListPointXBoundary[counterBoundary] = temp.absis;
-						ListPointYBoundary[counterBoundary] = temp.ordinat;
-						counterBoundary++;
+					putpixel(temp.absis,temp.ordinat, fill);					
 				}
-				counter++;
+				counter ++;
 			}
+			printf(" FINISH");
 		}
 	}
 	
-	if(plus){
-		i=0;
-		while(1){
-			if(ListPointXBoundary[i] > 0){
-				putpixel(ListPointXBoundary[i],ListPointYBoundary[i],fill);
-				i++;
-			}else {
-				break;
-			}
-		}
-	}
 }
 
 void floodFill4(int x, int y, int fill, int oldColor){
@@ -413,7 +389,7 @@ void initCanvas(){
 	lineDDA(h1,h2,WHITE);
 	lineDDA(v1,v2,WHITE);
 	circleBRES(pusKor,3,RED);
-	boundaryFill4Queue(pusKor, RED,RED,0);
+	boundaryFill4(pusKor, RED,RED);
 }
 
 void lineInteractive(){
@@ -435,7 +411,6 @@ void lineInteractive(){
 	printf("\nBerikut algoritma yang tersedia\n");
 	printf("1. DDA\n");
 	printf("2. BRESENHAM\n");
-	printf("3. FPA\n");
 	printf("Pilihan Anda :"); scanf("%d",&algo);
 
 	if(algo==1){
@@ -450,12 +425,6 @@ void lineInteractive(){
 		getch();
 		initCanvas();
 		lineBRES(P1.absis,P1.ordinat,P2.absis,P2.ordinat,GREEN);
-	}else if(algo ==3){
-		printf("\nAnda akan menggambar garis dengan algoritma");
-		printf(" FPA \nPRESS ANY KEY TO CONTINUE...");
-		getch();
-		initCanvas();
-		lineFPA(P1.absis,P1.ordinat,P2.absis,P2.ordinat,GREEN);
 	}else{
 		printf("Masukan Salah, program akan keluar");
 	}
@@ -465,16 +434,15 @@ void lineInteractive(){
 void circleInteractive(){
 	Point pusat;
 	int r;
-	int plus;
 	printf("Absis titik pusat ="); scanf("%d",&pusat.absis);
 	printf("Ordinat titik pusat ="); scanf("%d",&pusat.ordinat);
-	printf("Masukkan jari-jari lingkaran ="); scanf("%d",&r); scanf("%d",&plus);
+	printf("Masukkan jari-jari lingkaran ="); scanf("%d",&r);
 
 	initCanvas();
 	pusat=getPixLoc(pusat);
 	circleBRES(pusat,r,GREEN);
 	getch();
-	boundaryFillInteractive(pusat, YELLOW, GREEN, plus);
+	boundaryFillInteractive(pusat, YELLOW, GREEN);
 }
 
 void elipsInteractive(){
@@ -491,7 +459,7 @@ void elipsInteractive(){
 	initCanvas();
 	ellipseMidpoint(pusat.absis, pusat.ordinat,rh,rv,GREEN);
 	getch();
-	boundaryFillInteractive(pusat, YELLOW, GREEN, 0);
+	boundaryFillInteractive(pusat, YELLOW, GREEN);
 }
 
 void bezierCurve(int x[4], int y[4])
@@ -533,12 +501,12 @@ void curveInteractive(){
     bezierCurve(x, y);
 }
 
-void boundaryFillInteractive(Point P, int Fill, int Boundary,int plus){
+void boundaryFillInteractive(Point P, int Fill, int Boundary){
 	int ans;
 	printf("Apakah akan Anda Arsir?[Y = 1/N = 0] : "); scanf("%d", &ans);
 	if(ans){
-		//printf("MASUK %d %d", P.absis, P.ordinat);
-		boundaryFill4Queue(P,Fill, Boundary, plus);
+		printf("MASUK %d %d", P.absis, P.ordinat);
+		boundaryFill4Queue(P,Fill, Boundary, 1);
 	}
 }
 
@@ -552,14 +520,14 @@ void trapesiumInteractive(){
 	P3.ordinat = 50;
 	P4.absis = 150;
 	P4.ordinat = 20;
-
+	
 	P1 = getPixLoc(P1);
 	P2 = getPixLoc(P2);
 	P3 = getPixLoc(P3);
-	P4 = getPixLoc(P4);
-
+	P4 = getPixLoc(P4);		
+	
 	initCanvas();
-
+						
 	lineDDA(P1, P2, GREEN);
 	lineDDA(P2, P3, GREEN);
 	lineDDA(P3, P4, GREEN);
@@ -570,9 +538,7 @@ void trapesiumInteractive(){
 	P.absis = 100;
 	P.ordinat = 40;
 	P = getPixLoc(P);
-	boundaryFillInteractive(P, GREEN, GREEN, 0);
-	getch();
-	boundaryFillInteractive(P, BLUE, GREEN, 0);
+	boundaryFillInteractive(P, YELLOW, GREEN);
 	getch();
 }
 
@@ -589,6 +555,7 @@ int main(){
 	printf("2. Lingkaran\n");
 	printf("3. Elips\n");
 	printf("4. Curve\n");
+	printf("5. Gambar Trapesium\n");
 	printf("10. Exit\n");
 	printf("Pilihan Anda : ");
 	scanf("%d", &menu);
@@ -607,6 +574,9 @@ int main(){
 			break;
 		case 4:
 			curveInteractive();
+			break;
+		case 5:
+			trapesiumInteractive();
 			break;
 		case 10:
 			printf("THANKS :D");break;
