@@ -76,18 +76,11 @@ void lineFPA(int xa, int ya, int xb, int yb, int color){
 	int dx = xb-xa;
 	int dy = yb-ya;
 	int x;
-	int y;
-
-	if(dx>0){
-		for(x=xa; x<=xb;x++){
-		y=ya+(dy*(x-xa)/dx);
-		putpixel(x,y,color);
-		}
-	}else{
-		for(x=xb; x<=xa;x++){
-			y=yb+(dy*(x-xb)/dx);
-			putpixel(x,y,color);
-		}
+	float m = (dy/dx);
+		
+	for(x=xa;x<xb;x++){
+	 	int y=m*x + ya;
+		putpixel(x,y,YELLOW);
 	}
 }
 
@@ -117,19 +110,20 @@ void circleBRES(Point P1, int r,int color){
 			Y--;
 			p = p + (2*X) + 1 - (2*Y);
 		}
+		
 		gambar(xc,yc, X,Y,color);
 	}
 }
 
 void gambar(int xc, int yc, int X, int Y,int color){
-	putpixel(xc+X, yc+Y, color);
-	putpixel(xc+X, yc-Y, color);
-	putpixel(xc-X, yc+Y, color);
-	putpixel(xc-X, yc-Y, color);
-	putpixel(xc+Y, yc+X, color);
-	putpixel(xc+Y, yc-X, color);
-	putpixel(xc-Y, yc+X, color);
-	putpixel(xc-Y, yc-X, color);
+	if(!pembatas(xc+X, yc+Y))putpixel(xc+X, yc+Y, color);
+	if(!pembatas(xc+X, yc-Y))putpixel(xc+X, yc-Y, color);
+	if(!pembatas(xc-X, yc+Y))putpixel(xc-X, yc+Y, color);
+	if(!pembatas(xc-X, yc-Y))putpixel(xc-X, yc-Y, color);
+	if(!pembatas(xc+Y, yc+X))putpixel(xc+Y, yc+X, color);
+	if(!pembatas(xc+Y, yc-X))putpixel(xc+Y, yc-X, color);
+	if(!pembatas(xc-Y, yc+X))putpixel(xc-Y, yc+X, color);
+	if(!pembatas(xc-Y, yc-X))putpixel(xc-Y, yc-X, color);
 }
 
 
@@ -207,7 +201,7 @@ void boundaryFill4Queue(Point P, int fill, int boundary, int plus){
 
 	if(ListPointX[counter] == -2){
 		current = getpixel(P.absis, P.ordinat);
-		printf("%d %d %d|", current, boundary, fill);
+		//printf("%d %d %d|", current, boundary, fill);
 		if(current != boundary && current != fill){
 			ListPointX[counter] = PP.absis;
 			ListPointY[counter] = PP.ordinat;
@@ -794,6 +788,69 @@ void trapesiumInteractive(){
 	getch();
 }
 
+void clippingInteractive(){
+	Point Center;
+	Center.absis = 75;
+	Center.ordinat = 85;
+	Center = getPixLoc(Center);
+	int r = 10;
+	int fill = YELLOW;
+	
+	initCanvas();			
+	sleep(1);
+	circleBRES(Center, r, GREEN);
+	boundaryFill4Queue(Center, fill, GREEN, 0);
+	getch();
+	printf("tes kbhit() [%d %d]:", Center.absis, Center.ordinat);
+	char key;
+	int increment=5;
+	while(1){	
+		if (kbhit()){
+	 		key=getch();
+	 		switch (key){
+	 			case 'i':
+	 				//printf("i ");
+					boundaryFill4Queue(Center, BLACK, GREEN, 0);
+ 					circleBRES(Center, r, BLACK);	 
+// 						if(x>10 && x<630 && y>10 && y<460){					 				
+ 					if((Center.ordinat) > (10-r))Center.ordinat -=increment;
+ 					circleBRES(Center, r, GREEN);	 			
+ 					boundaryFill4Queue(Center, YELLOW, GREEN, 0); 						 					
+	 				break;
+	 			case 'j':
+	 				//printf("j ");
+					boundaryFill4Queue(Center, BLACK, GREEN, 0);	 				
+ 					circleBRES(Center, r, BLACK);	 					 				
+ 					if((Center.absis) > (10-r))Center.absis -=increment;	 				
+					circleBRES(Center, r, GREEN);
+ 					boundaryFill4Queue(Center, YELLOW, GREEN, 0);	
+	 				break;
+	 			case 'k':
+	 				//printf("k ");
+					boundaryFill4Queue(Center, BLACK, GREEN, 0);	 				
+ 					circleBRES(Center, r, BLACK);	 					 				
+					if((Center.ordinat) < (460+r))Center.ordinat +=increment;			 				
+	 				circleBRES(Center, r, GREEN);	 			
+ 					boundaryFill4Queue(Center, YELLOW, GREEN, 0);		
+	 				break;
+	 			case 'l':
+	 				//printf("l ");
+					boundaryFill4Queue(Center, BLACK, GREEN, 0);
+ 					circleBRES(Center, r, BLACK);	 					 	
+					if((Center.absis) < (630+r))Center.absis +=increment;					 				
+	 				circleBRES(Center, r, GREEN);	 			
+ 					boundaryFill4Queue(Center, YELLOW, GREEN, 0);	 					
+	 				break;
+	 			case 'x':
+	 				printf("EXIT ");
+	 				break;	 			
+	 		}
+	 		if(key == 'x') break;
+		}    
+	}
+	printf("%d %d", Center.absis, Center.ordinat);
+}
+
 int main(){
 	int menu;
 	menu =0;
@@ -808,6 +865,7 @@ int main(){
 	printf("3. Elips\n");
 	printf("4. Curve\n");
 	printf("5. Translation\n");
+	printf("6. Clipping\n");
 	
 	printf("10. Exit\n");
 	printf("Pilihan Anda : ");
@@ -831,6 +889,9 @@ int main(){
 		case 5:
 			translationInteractive();
 			break;			
+		case 6:
+			clippingInteractive();
+			break;
 		case 10:
 			printf("THANKS :D");break;
 		default:
@@ -841,3 +902,4 @@ int main(){
 	closegraph();
 	return 0;
 }
+
