@@ -17,10 +17,17 @@ typedef struct{
 }Point;
 //---------------
 
-
 //HEADER
 void boundaryFillInteractive(Point,int,int,int);
 //------------------------------
+
+int pembatas(int x, int y){
+	if(x>10 && x<630 && y>10 && y<460){
+		return 0;
+	}else{
+		return 1;
+	}
+}
 
 void lineDDA(Point P1, Point P2, int COLOR){
 	int xa,xb,ya,yb;
@@ -224,6 +231,7 @@ void boundaryFill4Queue(Point P, int fill, int boundary, int plus){
 					int j=counter;
 				
 					while(currentW != boundary && currentW != fill){
+						if(pembatas(W.absis,W.ordinat))break;
 						putpixel(W.absis,W.ordinat,fill);
 						if(getpixel(W.absis, W.ordinat+1) != boundary && getpixel(W.absis, W.ordinat+1) != fill){
 							PP.absis = W.absis;
@@ -261,6 +269,7 @@ void boundaryFill4Queue(Point P, int fill, int boundary, int plus){
 					}					
 
 					while(currentE != boundary && currentE != fill){
+						if(pembatas(E.absis,E.ordinat))break;
 						putpixel(E.absis,E.ordinat,fill);
 						if(getpixel(E.absis, E.ordinat + 1) != boundary && getpixel(E.absis, E.ordinat + 1) != fill){
 							PP.absis = E.absis;
@@ -372,8 +381,9 @@ void scanlineFill4(Point P, int fill, int boundary){
 					int j=counter;
 				
 					while(currentW != boundary && currentW != fill){
-						putpixel(W.absis,W.ordinat,fill);
-						delay(100);
+						if(!pembatas(W.absis,W.ordinat)){
+							putpixel(W.absis,W.ordinat,fill);
+						}
 						if(getpixel(W.absis, W.ordinat+1) != boundary && getpixel(W.absis, W.ordinat+1) != fill){
 							PP.absis = W.absis;
 							PP.ordinat = W.ordinat+1;
@@ -410,7 +420,9 @@ void scanlineFill4(Point P, int fill, int boundary){
 					}					
 
 					while(currentE != boundary && currentE != fill){
-						putpixel(E.absis,E.ordinat,fill);
+						if(!pembatas(W.absis,W.ordinat)){
+							putpixel(E.absis,E.ordinat,fill);
+						}
 						if(getpixel(E.absis, E.ordinat + 1) != boundary && getpixel(E.absis, E.ordinat + 1) != fill){
 							PP.absis = E.absis;
 							PP.ordinat = E.ordinat + 1;
@@ -505,35 +517,42 @@ void translation(int a, int b){
 	circleBRES(pusat,10,GREEN);
 		
 	int xa,xb,ya,yb;
-	xa = pusat.absis;
-	xb = akhir.absis;
-	ya = pusat.ordinat;
-	yb = akhir.ordinat;
-	
-	int dx = xb-xa;
-	int dy = yb-ya;
-	int x;
-	int y;
-	int dly  = 40;
+	//--------------
+	xa= pusat.absis;
+	xb= akhir.absis;
+	ya= pusat.ordinat;
+	yb= akhir.ordinat;
+	//--------------
+	int dx=xb-xa;
+	int dy=yb-ya;
+	int steps;
+	int k;
+	float xIncrement, yIncrement;
+	float x=xa;
+	float y=ya;
 
-	if(dx>0){
-		for(x=xa; x<=xb;x++){						
-			circleBRES(draw,10,BLACK);
-			y=ya+(dy*(x-xa)/dx);
-			draw.absis = x;
-			draw.ordinat = y;
-			circleBRES(draw,10,GREEN);
-			delay(dly);
+	if(abs(dx) > abs(dy)) steps = abs(dx);
+	else steps = abs(dy);
+	xIncrement = dx/(float) steps;
+	yIncrement = dy/(float) steps;
+
+	draw.absis=ROUND(x);
+	draw.ordinat = ROUND(y);
+	if(pembatas(draw.absis,draw.ordinat)){
+
+	}
+	circleBRES(draw,100,GREEN);			
+	for(k=0; k<steps;k++){
+		delay(20);
+		circleBRES(draw,100,BLACK);					
+		x+=xIncrement;
+		y+=yIncrement;
+		draw.absis=ROUND(x);
+		draw.ordinat = ROUND(y);
+		if(pembatas(draw.absis,draw.ordinat)){
+			break;
 		}
-	}else{
-		for(x=xb; x<=xa;x++){
-			circleBRES(draw,10,BLACK);
-			y=yb+(dy*(x-xb)/dx);
-			draw.absis = x;
-			draw.ordinat = y;
-			circleBRES(draw,10,GREEN);
-			delay(dly);
-		}
+		circleBRES(draw,100,GREEN);		
 	}
 }
 
